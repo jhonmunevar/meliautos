@@ -413,7 +413,7 @@ let _homeCards = [];
 async function cargarFechas(items) {
   const sinFecha = items.filter(i => !i.fecha_fmt || i.fecha_fmt === '').slice(0, 8);
   if (!sinFecha.length) {
-    document.getElementById('btnFechas').style.display = 'none';
+    const __b = document.getElementById('btnFechas'); if(__b) __b.style.display = 'none';
     return;
   }
   const btnF  = document.getElementById('btnFechas');
@@ -479,8 +479,10 @@ let fbCards = [];
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('tabML').classList.toggle('active', tab === 'ml');
-  document.getElementById('tabFB').classList.toggle('active', tab === 'fb');
-  document.getElementById('fbNotice').classList.toggle('show', tab === 'fb' && !fbCards.length);
+  const tabFB = document.getElementById('tabFB');
+  if (tabFB) tabFB.classList.toggle('active', tab === 'fb');
+  const fbNotice = document.getElementById('fbNotice');
+  if (fbNotice) fbNotice.classList.toggle('show', tab === 'fb' && !fbCards.length);
 
   if (tab === 'ml') {
     renderCards(sortData(allCards, currentSort), 'cardsGrid');
@@ -566,8 +568,10 @@ async function buscar(pagina = 0, orden = "") {
   currentTab = 'ml';
   fbCards = [];
   document.getElementById('tabML').classList.add('active');
-  document.getElementById('tabFB').classList.remove('active');
-  document.getElementById('fbNotice').classList.remove('show');
+  const _tabFB = document.getElementById('tabFB');
+  if (_tabFB) _tabFB.classList.remove('active');
+  const _fbNotice = document.getElementById('fbNotice');
+  if (_fbNotice) _fbNotice.classList.remove('show');
   if (!orden) {
     document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('.sort-btn').classList.add('active');
@@ -611,9 +615,11 @@ async function buscar(pagina = 0, orden = "") {
     document.getElementById('resultsCount').textContent =
       `${cnt.toLocaleString()} vehículos · mostrando ${allCards.length}`;
 
-    // Mostrar botón de fechas
-    document.getElementById('btnFechas').style.display = 'inline-flex';
-    document.getElementById('fechasStatus').style.display = 'none';
+    // Mostrar botón de fechas (si existe)
+    const _btnF = document.getElementById('btnFechas');
+    const _stato = document.getElementById('fechasStatus');
+    if (_btnF) _btnF.style.display = 'inline-flex';
+    if (_stato) _stato.style.display = 'none';
 
   } catch(e) {
     showError('Error: ' + e.message);
