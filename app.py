@@ -889,6 +889,8 @@ def api_buscar():
     cat_info = CATEGORIAS.get(cat_key, CATEGORIAS["carros"])
     cat_slug, dominio = cat_info[1], cat_info[2]
     orden    = request.args.get("orden", "")
+    anio_min = request.args.get("anio_min", type=int)
+    anio_max = request.args.get("anio_max", type=int)
 
     try:
         raw = scrape_listado(cat_slug, query, marca, precio_min, precio_max, pagina, dominio, orden)

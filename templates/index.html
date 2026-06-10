@@ -47,6 +47,10 @@ input::placeholder{color:var(--muted);}
   cursor:pointer;transition:opacity .2s;letter-spacing:1px;width:100%;}
 .btn-search:hover{opacity:.85;}
 .btn-search:disabled{opacity:.4;cursor:not-allowed;}
+#filtrosActivos select{background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:7px 10px;border-radius:7px;font-size:12px;width:100%;outline:none;}
+#filtrosActivos select:focus{border-color:var(--accent2);}
+.filter-active{border-color:var(--accent2) !important;}
 .btn-fechas{background:var(--bg3);border:1px solid var(--accent2);color:var(--accent2);
   padding:5px 12px;border-radius:6px;font-family:var(--mono);font-size:10px;
   cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
@@ -290,6 +294,28 @@ main{padding:20px 24px;overflow-y:auto;}
       <div class="field"><label>Precio mín</label><input type="number" id="pmin" placeholder="0"></div>
       <div class="field"><label>Precio máx</label><input type="number" id="pmax" placeholder="..."></div>
     </div>
+    <div class="price-row" id="yearSection">
+      <div class="field"><label>Año mín</label><input type="number" id="anio_min" placeholder="2000" min="1990" max="2026"></div>
+      <div class="field"><label>Año máx</label><input type="number" id="anio_max" placeholder="2026" min="1990" max="2026"></div>
+    </div>
+  </div>
+
+  <!-- Filtros activos post-búsqueda -->
+  <div id="filtrosActivos" style="display:none">
+    <div class="slabel">Filtrar resultados</div>
+    <div class="field">
+      <label>Año exacto</label>
+      <select id="filtroAnio" onchange="aplicarFiltros()">
+        <option value="">Todos los años</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Versión / Modelo</label>
+      <select id="filtroModelo" onchange="aplicarFiltros()">
+        <option value="">Todas las versiones</option>
+      </select>
+    </div>
+    <button class="btn-search" style="background:var(--bg3);color:var(--accent);border:1px solid var(--accent);margin-top:4px" onclick="limpiarFiltros()">✕ Limpiar filtros</button>
   </div>
 
   <label class="ia-toggle">
@@ -551,6 +577,70 @@ async function buscarFB() {
   }
 }
 
+// ── Filtros dinámicos ──────────────────────────────────────────────────────
+let filtroAnioActivo = '';
+let filtroModeloActivo = '';
+
+function poblarFiltrosDinamicos(items) {
+  // Años únicos ordenados
+  const anios = [...new Set(items.map(i => i.anio).filter(a => a && a !== '?'))].sort().reverse();
+  const selAnio = document.getElementById('filtroAnio');
+  selAnio.innerHTML = '<option value="">Todos los años</option>';
+  anios.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a; opt.textContent = a;
+    if (a === filtroAnioActivo) opt.selected = true;
+    selAnio.appendChild(opt);
+  });
+
+  // Modelos únicos ordenados
+  const modelos = [...new Set(items.map(i => i.modelo).filter(m => m && m !== '?' && m !== ''))].sort();
+  const selModelo = document.getElementById('filtroModelo');
+  selModelo.innerHTML = '<option value="">Todas las versiones</option>';
+  modelos.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    if (m === filtroModeloActivo) opt.selected = true;
+    selModelo.appendChild(opt);
+  });
+
+  // Mostrar panel de filtros si hay resultados
+  document.getElementById('filtrosActivos').style.display = items.length ? 'block' : 'none';
+}
+
+function aplicarFiltros() {
+  filtroAnioActivo   = document.getElementById('filtroAnio').value;
+  filtroModeloActivo = document.getElementById('filtroModelo').value;
+
+  let filtrados = [...allCards];
+  if (filtroAnioActivo)   filtrados = filtrados.filter(i => i.anio === filtroAnioActivo);
+  if (filtroModeloActivo) filtrados = filtrados.filter(i => i.modelo === filtroModeloActivo);
+
+  renderCards(sortData(filtrados, currentSort), 'cardsGrid');
+
+  // Actualizar conteo
+  const txt = filtrados.length < allCards.length
+    ? `${filtrados.length} de ${allCards.length} vehículos (filtrado)`
+    : `${allCards.length} vehículos`;
+  document.getElementById('resultsCount').textContent = txt;
+
+  // Marcar filtros activos visualmente
+  document.getElementById('filtroAnio').classList.toggle('filter-active', !!filtroAnioActivo);
+  document.getElementById('filtroModelo').classList.toggle('filter-active', !!filtroModeloActivo);
+}
+
+function limpiarFiltros() {
+  filtroAnioActivo = '';
+  filtroModeloActivo = '';
+  document.getElementById('filtroAnio').value = '';
+  document.getElementById('filtroModelo').value = '';
+  document.getElementById('filtroAnio').classList.remove('filter-active');
+  document.getElementById('filtroModelo').classList.remove('filter-active');
+  renderCards(sortData(allCards, currentSort), 'cardsGrid');
+  document.getElementById('resultsCount').textContent =
+    `${allCards.length} vehículos`;
+}
+
 // ── Buscar recientes desde ML ──────────────────────────────────────────────
 let _lastSearchParams = null;
 function buscarRecientes(btn) {
@@ -594,8 +684,12 @@ async function buscar(pagina = 0, orden = "") {
   });
   const pmin = document.getElementById('pmin').value;
   const pmax = document.getElementById('pmax').value;
+  const amin = document.getElementById('anio_min').value;
+  const amax = document.getElementById('anio_max').value;
   if (pmin) params.append('precio_min', pmin);
   if (pmax) params.append('precio_max', pmax);
+  if (amin) params.append('anio_min', amin);
+  if (amax) params.append('anio_max', amax);
 
   currentPage = pagina;
 
@@ -614,6 +708,9 @@ async function buscar(pagina = 0, orden = "") {
     const cnt = data.stats?.total_encontrados || 0;
     document.getElementById('resultsCount').textContent =
       `${cnt.toLocaleString()} vehículos · mostrando ${allCards.length}`;
+
+    // Poblar filtros dinámicos de año y modelo
+    poblarFiltrosDinamicos(allCards);
 
     // Mostrar botón de fechas (si existe)
     const _btnF = document.getElementById('btnFechas');
