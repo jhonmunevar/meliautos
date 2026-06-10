@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeLi Autos — Oportunidades</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0c0f; --bg2:#111318; --bg3:#181c23; --border:#1e2430;
+  --accent:#f0c040; --accent2:#3de8c0; --accent3:#ff5c7a;
+  --text:#e8eaf0; --muted:#6b7280;
+  --green:#00e676; --blue:#40c4ff; --yellow:#ffd740; --red:#ff5252;
+  --mono:'Space Mono',monospace; --sans:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
+
+/* Header */
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 28px;
+  display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.logo{font-size:20px;font-weight:800;letter-spacing:-.5px;}
+.logo span{color:var(--accent);}
+.logo-tag{font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--bg3);
+  border:1px solid var(--border);padding:2px 7px;border-radius:4px;}
+
+/* Layout */
+.app{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 57px);}
+
+/* Sidebar */
+aside{background:var(--bg2);border-right:1px solid var(--border);padding:20px 16px;
+  display:flex;flex-direction:column;gap:16px;overflow-y:auto;
+  position:sticky;top:57px;height:calc(100vh - 57px);}
+.slabel{font-family:var(--mono);font-size:10px;color:var(--accent);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:11px;color:var(--muted);font-family:var(--mono);}
+input,select{background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:8px 10px;border-radius:7px;font-family:var(--sans);font-size:13px;
+  outline:none;transition:border-color .2s;width:100%;}
+input:focus,select:focus{border-color:var(--accent);}
+input::placeholder{color:var(--muted);}
+.price-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+
+.btn-search{background:var(--accent);color:#000;border:none;padding:11px;
+  border-radius:7px;font-family:var(--mono);font-weight:700;font-size:12px;
+  cursor:pointer;transition:opacity .2s;letter-spacing:1px;width:100%;}
+.btn-search:hover{opacity:.85;}
+.btn-search:disabled{opacity:.4;cursor:not-allowed;}
+.btn-fechas{background:var(--bg3);border:1px solid var(--accent2);color:var(--accent2);
+  padding:5px 12px;border-radius:6px;font-family:var(--mono);font-size:10px;
+  cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+.btn-fechas:hover{background:var(--accent2);color:#000;}
+.btn-fechas:disabled{opacity:.5;cursor:not-allowed;}
+.src-badge{font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 6px;
+  border-radius:3px;letter-spacing:1px;position:absolute;bottom:8px;left:8px;z-index:3;}
+.src-ml{background:#ffe800;color:#000;}
+.src-fb{background:#1877f2;color:#fff;}
+/* Tabs */
+.tabs{display:flex;gap:0;margin-bottom:0;border-bottom:2px solid var(--border);}
+.tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--muted);padding:10px 20px;font-family:var(--mono);font-size:11px;
+  font-weight:700;cursor:pointer;letter-spacing:1px;margin-bottom:-2px;transition:all .2s;}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-btn.fb.active{color:#1877f2;border-bottom-color:#1877f2;}
+.fb-notice{background:#0a1829;border:1px solid #1877f2;border-radius:8px;
+  padding:12px 16px;margin-bottom:16px;font-size:12px;color:#90caf9;
+  font-family:var(--mono);display:none;}
+.fb-notice.show{display:block;}
+
+/* Toggle IA */
+.ia-toggle{display:flex;align-items:center;gap:8px;padding:8px 10px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;}
+.ia-toggle input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent2);}
+.ia-toggle span{font-size:11px;color:var(--accent2);font-family:var(--mono);}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:9px;}
+.stat-card .val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent);}
+.stat-card .lbl{font-size:9px;color:var(--muted);margin-top:2px;}
+.stat-card.green{background:#0a1f12;border-color:#1a3a28;}
+.stat-card.green .val{color:var(--green);}
+.stat-card.blue{background:#091929;border-color:#1a3050;}
+.stat-card.blue .val{color:var(--blue);}
+
+/* Main */
+main{padding:20px 24px;overflow-y:auto;}
+
+/* Hero / pantalla inicio */
+.hero{margin-bottom:28px;}
+.hero-title{font-size:26px;font-weight:800;margin-bottom:4px;}
+.hero-title span{color:var(--accent);}
+.hero-sub{color:var(--muted);font-size:13px;margin-bottom:20px;}
+
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.section-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.section-title .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+
+/* Sort */
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.results-count{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.sort-row{display:flex;gap:6px;}
+.sort-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);
+  padding:5px 10px;border-radius:5px;font-size:10px;font-family:var(--mono);cursor:pointer;transition:all .2s;}
+.sort-btn.active,.sort-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* Cards */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+
+.vcard{background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;cursor:pointer;transition:border-color .2s,transform .15s;position:relative;}
+.vcard:hover{transform:translateY(-2px);}
+.vcard.excelente{border-color:#1a3a28;}
+.vcard.excelente:hover{border-color:var(--green);}
+.vcard.muybuena{border-color:#0a2535;}
+.vcard.muybuena:hover{border-color:var(--blue);}
+
+/* Score ring */
+.score-wrap{position:absolute;top:10px;right:10px;z-index:3;}
+.score-ring{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-family:var(--mono);font-weight:700;font-size:13px;
+  color:#000;box-shadow:0 2px 10px rgba(0,0,0,.5);}
+
+/* Badges */
+.badges{position:absolute;top:10px;left:10px;z-index:3;display:flex;flex-direction:column;gap:3px;}
+.badge{font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;
+  letter-spacing:1px;}
+.badge.HOY{background:#b71c1c;color:#fff;}
+.badge.RECIENTE{background:#1b5e20;color:#a5d6a7;}
+.badge.URGENTE{background:#e65100;color:#ffe0b2;}
+.badge.NEGOCIABLE{background:#1a237e;color:#90caf9;}
+.badge-1{background:#4a148c;color:#ea80fc;}
+
+/* Card image */
+.cimg{width:100%;height:160px;object-fit:cover;background:var(--bg3);display:block;}
+.cimg-ph{width:100%;height:160px;background:var(--bg3);display:flex;align-items:center;
+  justify-content:center;font-size:36px;}
+
+/* Card body */
+.cbody{padding:12px;}
+.ccls{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:2px;
+  padding:2px 7px;border-radius:3px;display:inline-block;margin-bottom:6px;}
+.cls-EXCELENTE{background:#0d2e1a;color:var(--green);}
+.cls-MUY\ BUENA{background:#091929;color:var(--blue);}
+.cls-BUENA{background:#0a1f12;color:#69f0ae;}
+.cls-REGULAR{background:#2a2400;color:var(--yellow);}
+.cls-BAJA{background:#2a0a0a;color:var(--red);}
+
+.ctitle{font-size:12px;font-weight:600;line-height:1.4;margin-bottom:7px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.cprice{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);}
+.cprice-sub{font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:8px;}
+.diff-pos{color:var(--green);}
+.diff-neg{color:var(--red);}
+
+.cmeta{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;}
+.tag{background:var(--bg3);border:1px solid var(--border);padding:2px 6px;
+  border-radius:3px;font-size:9px;font-family:var(--mono);color:var(--muted);}
+.tag.km{color:var(--accent2);border-color:#1a3a3a;}
+.tag.fecha{color:var(--yellow);border-color:#3a3000;}
+.tag.unico{color:#ea80fc;border-color:#4a148c;}
+.tag.neg{color:#90caf9;border-color:#1a237e;}
+.tag.urg{color:#ffab76;border-color:#5d1a00;}
+
+.creasons{display:flex;flex-direction:column;gap:2px;margin-bottom:6px;}
+.reason{font-size:9px;color:#4caf82;font-family:var(--mono);}
+.reason::before{content:"✓ ";}
+.alert-i{font-size:9px;color:#e57373;font-family:var(--mono);}
+.alert-i::before{content:"⚠ ";}
+
+.ia-summary{font-size:10px;color:var(--accent2);font-family:var(--mono);
+  background:#071e1a;border:1px solid #1a3a38;border-radius:4px;
+  padding:4px 8px;margin-top:4px;}
+.ia-summary::before{content:"🤖 ";}
+
+.cfoot{padding:8px 12px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;}
+.cloc{font-size:9px;color:var(--muted);font-family:var(--mono);}
+.btn-ver{background:transparent;border:1px solid var(--accent);color:var(--accent);
+  padding:4px 10px;border-radius:4px;font-size:10px;font-family:var(--mono);
+  cursor:pointer;text-decoration:none;transition:all .2s;}
+.btn-ver:hover{background:var(--accent);color:#000;}
+
+/* Loading */
+.loading{display:none;flex-direction:column;align-items:center;
+  justify-content:center;padding:80px 0;gap:14px;}
+.loading.show{display:flex;}
+.spinner{width:36px;height:36px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-family:var(--mono);font-size:11px;color:var(--muted);}
+
+/* Empty */
+.empty{display:none;flex-direction:column;align-items:center;padding:60px 0;gap:10px;color:var(--muted);}
+.empty.show{display:flex;}
+.empty-icon{font-size:42px;}
+.empty-msg{font-family:var(--mono);font-size:12px;}
+
+/* Pagination */
+.pagination{display:flex;justify-content:center;gap:6px;margin-top:20px;}
+.page-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:6px 14px;border-radius:5px;font-family:var(--mono);font-size:11px;
+  cursor:pointer;transition:all .2s;}
+.page-btn:hover,.page-btn.active{border-color:var(--accent);color:var(--accent);}
+.page-btn:disabled{opacity:.3;cursor:not-allowed;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:24px;max-width:660px;width:92%;max-height:88vh;overflow-y:auto;position:relative;}
+.modal-close{position:absolute;top:14px;right:14px;background:var(--bg3);border:none;
+  color:var(--muted);width:28px;height:28px;border-radius:50%;cursor:pointer;
+  font-size:15px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{color:var(--text);}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:14px;padding-right:36px;}
+.modal-photos{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;}
+.modal-photo{width:130px;height:90px;object-fit:cover;border-radius:5px;flex-shrink:0;}
+
+/* Score breakdown */
+.score-breakdown{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:14px;margin-bottom:14px;}
+.score-big{font-family:var(--mono);font-size:32px;font-weight:700;margin-bottom:8px;}
+.score-factors{display:flex;flex-direction:column;gap:4px;}
+
+.attrs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;}
+.attr-item{background:var(--bg3);padding:7px 10px;border-radius:5px;border:1px solid var(--border);}
+.attr-item .ak{font-size:9px;color:var(--muted);font-family:var(--mono);}
+.attr-item .av{font-size:12px;margin-top:1px;}
+.modal-btn{display:block;width:100%;background:var(--accent);color:#000;text-align:center;
+  padding:11px;border-radius:7px;font-family:var(--mono);font-weight:700;font-size:12px;
+  text-decoration:none;transition:opacity .2s;margin-top:12px;}
+.modal-btn:hover{opacity:.88;}
+
+@media(max-width:900px){
+  .app{grid-template-columns:1fr;}
+  aside{position:static;height:auto;}
+  main{padding:14px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">MeLi<span>Autos</span></div>
+  <div class="logo-tag">Colombia · v5 · IA</div>
+</header>
+
+<div class="app">
+<aside>
+  <div>
+    <div class="slabel">Búsqueda</div>
+    <div class="field">
+      <label>Palabras clave</label>
+      <input type="text" id="q" placeholder="Spark, Sandero, Hilux...">
+    </div>
+  </div>
+  <div>
+    <div class="slabel">Categoría</div>
+    <select id="categoria" onchange="onCatChange(this.value)">
+      <optgroup label="🚗 Vehículos">
+        <option value="carros">Carros y Camionetas</option>
+        <option value="motos">Motos</option>
+        <option value="camiones">Camiones y Buses</option>
+      </optgroup>
+      <optgroup label="🏠 Inmuebles">
+        <option value="casas">Casas</option>
+        <option value="apartamentos">Apartamentos</option>
+        <option value="fincas">Fincas</option>
+        <option value="bodegas">Bodegas</option>
+        <option value="locales">Locales Comerciales</option>
+      </optgroup>
+    </select>
+  </div>
+  <div>
+    <div class="slabel">Filtros</div>
+    <div class="field">
+      <label>Marca</label>
+      <div id="marcaSection">
+      <select id="marca">
+        {% for m in marcas %}
+        <option value="{{ m }}">{{ m if m else 'Todas las marcas' }}</option>
+        {% endfor %}
+      </select>
+      </div>
+    </div>
+    <div class="price-row">
+      <div class="field"><label>Precio mín</label><input type="number" id="pmin" placeholder="0"></div>
+      <div class="field"><label>Precio máx</label><input type="number" id="pmax" placeholder="..."></div>
+    </div>
+  </div>
+
+  <label class="ia-toggle">
+    <input type="checkbox" id="useIA">
+    <span>🤖 Análisis IA descripciones</span>
+  </label>
+
+  <button class="btn-search" id="btnBuscar" onclick="buscar()">⌕ BUSCAR</button>
+
+  <div id="statsPanel" style="display:none">
+    <div class="slabel">Estadísticas</div>
+    <div class="stats-grid" id="statsGrid"></div>
+  </div>
+</aside>
+
+<main>
+  <!-- Pantalla de inicio -->
+  <div id="homeScreen">
+    <div class="hero">
+      <div class="hero-title">Mejores <span>oportunidades</span> ahora</div>
+      <div class="hero-sub">Vehículos con mayor puntaje en MercadoLibre Colombia — solo los mejores</div>
+    </div>
+    <div class="section-header">
+      <div class="section-title">
+        <div class="dot"></div>
+        Top oportunidades del momento
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted)" id="homeLoading">Cargando...</div>
+    </div>
+    <div class="cards-grid" id="homeCards"></div>
+  </div>
+
+  <!-- Pantalla de resultados -->
+  <div id="searchScreen" style="display:none">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabML" onclick="switchTab('ml')">🛒 MercadoLibre</button>
+      <!-- FB temporalmente desactivado -->
+      <!-- <button class="tab-btn fb" id="tabFB" onclick="switchTab('fb')">👥 Facebook Marketplace</button> -->
+    </div>
+    <div class="fb-notice" id="fbNotice">
+      👥 <b>Primera vez:</b> Se abrirá una ventana de Chrome. Inicia sesión en Facebook,
+      luego vuelve aquí y haz clic en "FB Marketplace" de nuevo.
+      &nbsp;<button onclick="resetFB()" style="background:#1877f2;border:none;color:#fff;
+      padding:3px 8px;border-radius:4px;cursor:pointer;font-size:10px">Reintentar</button>
+    </div>
+    <div class="top-bar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="results-count" id="resultsCount"></div>
+
+      </div>
+      <div class="sort-row">
+        <span style="font-size:10px;color:var(--muted);font-family:var(--mono)">Orden:</span>
+        <button class="sort-btn active" onclick="sortCards('score',this)">Oportunidad</button>
+        <button class="sort-btn" onclick="buscarRecientes(this)">🕐 Recientes ML</button>
+        <button class="sort-btn" onclick="sortCards('precio_asc',this)">Precio ↑</button>
+        <button class="sort-btn" onclick="sortCards('precio_desc',this)">Precio ↓</button>
+      </div>
+    </div>
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Buscando en MercadoLibre...</div>
+    </div>
+    <div class="empty" id="empty">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-msg">No se encontraron resultados</div>
+    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+let allCards = [], currentPage = 0, totalResults = 0, currentSort = 'score';
+
+// ── Cambio categoría ───────────────────────────────────────────────────────
+const CATS_VEHICULOS = new Set(['carros','motos','camiones']);
+function onCatChange(val) {
+  const marcaSection = document.getElementById('marcaSection');
+  if (marcaSection) marcaSection.style.display = CATS_VEHICULOS.has(val) ? 'block' : 'none';
+}
+
+// ── Inicio ─────────────────────────────────────────────────────────────────
+async function cargarInicio() {
+  document.getElementById('homeLoading').textContent = 'Cargando...';
+  try {
+    const res  = await fetch('/api/inicio');
+    const data = await res.json();
+    const homeItems = data.items || [];
+    _homeCards = homeItems;
+    document.getElementById('homeLoading').textContent =
+      homeItems.length ? `${homeItems.length} encontradas` : '';
+    renderCards(homeItems, 'homeCards');
+    // Mostrar botón de fechas en home
+    if (homeItems.length) {
+      const btnF = document.getElementById('btnFechas');
+      btnF.style.display = 'inline-flex';
+    }
+  } catch(e) {
+    document.getElementById('homeLoading').textContent = 'Error al cargar';
+  }
+}
+
+// ── Fechas async ───────────────────────────────────────────────────────────
+function cargarFechasActivos() {
+  // Determina qué cards están visibles actualmente
+  const esHome = document.getElementById('homeScreen').style.display !== 'none';
+  const items  = esHome ? _homeCards : allCards;
+  cargarFechas(items);
+}
+let _homeCards = [];
+
+async function cargarFechas(items) {
+  const sinFecha = items.filter(i => !i.fecha_fmt || i.fecha_fmt === '').slice(0, 8);
+  if (!sinFecha.length) {
+    document.getElementById('btnFechas').style.display = 'none';
+    return;
+  }
+  const btnF  = document.getElementById('btnFechas');
+  const stato = document.getElementById('fechasStatus');
+  btnF.disabled = true;
+  btnF.textContent = '⏳ Cargando...';
+  stato.style.display = 'inline';
+  stato.textContent = `Visitando ${sinFecha.length} publicaciones...`;
+  try {
+    const res = await fetch('/api/fechas', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({items: sinFecha.map(i => ({id: i.id, url: i.url}))})
+    });
+    const fechas = await res.json();
+    let n = 0;
+    for (const item of allCards) {
+      if (fechas[item.id]) {
+        item.fecha_raw = fechas[item.id];
+        item.fecha_fmt = parsearFechaTexto(fechas[item.id]);
+        n++;
+      }
+    }
+    if (n > 0) renderCards(sortData(allCards, currentSort), 'cardsGrid');
+    stato.textContent = n > 0 ? `✓ ${n} fechas cargadas` : 'Sin fechas disponibles';
+    btnF.style.display = 'none';
+  } catch(e) {
+    stato.textContent = 'Error al cargar fechas';
+    btnF.disabled = false;
+    btnF.textContent = '📅 Reintentar';
+  }
+}
+
+function parsearFechaTexto(txt) {
+  if (!txt) return '';
+  const t = txt.toLowerCase();
+  if (t.includes('hoy') || t.includes('minuto') || t.includes('hora')) return 'Hoy';
+  if (t.includes('ayer') || t.includes('1 día') || t.includes('1 dia')) return 'Ayer';
+  const dm = t.match(/(\d+)\s*d[ií]a/);  if (dm) return `Hace ${dm[1]} días`;
+  const sm = t.match(/(\d+)\s*semana/);  if (sm) return `Hace ${sm[1]} sem.`;
+  const mm = t.match(/(\d+)\s*mes/);     if (mm) return `Hace ${mm[1]} meses`;
+  const am = t.match(/(\d+)\s*a[ñn]o/);  if (am) return `Hace ${am[1]} años`;
+  // ISO date
+  try {
+    const d = new Date(txt);
+    if (!isNaN(d)) {
+      const dias = Math.floor((Date.now() - d) / 86400000);
+      if (dias === 0) return 'Hoy';
+      if (dias === 1) return 'Ayer';
+      if (dias < 7)  return `Hace ${dias} días`;
+      if (dias < 30) return `Hace ${Math.floor(dias/7)} sem.`;
+      if (dias < 365) return `Hace ${Math.floor(dias/30)} meses`;
+      return `Hace ${Math.floor(dias/365)} años`;
+    }
+  } catch(e) {}
+  return txt.replace('Publicado ', '');
+}
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+let currentTab = 'ml';
+let fbCards = [];
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabML').classList.toggle('active', tab === 'ml');
+  document.getElementById('tabFB').classList.toggle('active', tab === 'fb');
+  document.getElementById('fbNotice').classList.toggle('show', tab === 'fb' && !fbCards.length);
+
+  if (tab === 'ml') {
+    renderCards(sortData(allCards, currentSort), 'cardsGrid');
+    const cnt = allCards.length;
+    document.getElementById('resultsCount').textContent =
+      `${cnt} resultados · MercadoLibre`;
+  } else {
+    if (fbCards.length) {
+      renderCards(sortData(fbCards, currentSort), 'cardsGrid');
+      document.getElementById('resultsCount').textContent =
+        `${fbCards.length} resultados · Facebook Marketplace`;
+    } else {
+      buscarFB();
+    }
+  }
+}
+
+async function resetFB() {
+  fbCards = [];
+  await fetch('/api/reset_fb');
+  buscarFB();
+}
+
+async function buscarFB() {
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('empty').classList.remove('show');
+  document.getElementById('cardsGrid').innerHTML = '';
+  document.getElementById('fbNotice').classList.remove('show');
+
+  const params = new URLSearchParams({
+    q:         document.getElementById('q').value,
+    categoria: document.getElementById('categoria').value,
+    precio_min: document.getElementById('pmin').value || '',
+    precio_max: document.getElementById('pmax').value || '',
+  });
+
+  try {
+    const res  = await fetch('/api/buscar_fb?' + params);
+    const data = await res.json();
+
+    if (data.error && !data.items?.length) {
+      document.getElementById('loading').classList.remove('show');
+      if (data.error === 'login_required') {
+        const notice = document.getElementById('fbNotice');
+        notice.innerHTML = '🔐 <b>Inicia sesión en Facebook</b> en la ventana de Chrome que se abrió. ' +
+          'Una vez logueado, haz clic aquí: ' +
+          '<button onclick="buscarFB()" style="background:#1877f2;border:none;color:#fff;' +
+          'padding:4px 12px;border-radius:4px;cursor:pointer;font-weight:bold">Reintentar</button>';
+        notice.classList.add('show');
+        document.getElementById('resultsCount').textContent = '⏳ Esperando login en Facebook...';
+      } else {
+        document.getElementById('resultsCount').textContent = '⚠ ' + data.error;
+      }
+      return;
+    }
+
+    fbCards = data.items || [];
+    renderStats(data.stats);
+    renderCards(sortData(fbCards, currentSort), 'cardsGrid');
+    document.getElementById('resultsCount').textContent =
+      `${fbCards.length} resultados · Facebook Marketplace`;
+  } catch(e) {
+    document.getElementById('resultsCount').textContent = '⚠ Error FB: ' + e.message;
+  } finally {
+    document.getElementById('loading').classList.remove('show');
+  }
+}
+
+// ── Buscar recientes desde ML ──────────────────────────────────────────────
+let _lastSearchParams = null;
+function buscarRecientes(btn) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Re-buscar con orden=reciente en ML
+  buscar(0, 'reciente');
+}
+
+// ── Buscar ─────────────────────────────────────────────────────────────────
+async function buscar(pagina = 0, orden = "") {
+  document.getElementById('homeScreen').style.display   = 'none';
+  document.getElementById('searchScreen').style.display = 'block';
+  // Reset to ML tab on new search
+  currentTab = 'ml';
+  fbCards = [];
+  document.getElementById('tabML').classList.add('active');
+  document.getElementById('tabFB').classList.remove('active');
+  document.getElementById('fbNotice').classList.remove('show');
+  if (!orden) {
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.sort-btn').classList.add('active');
+  }
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('empty').classList.remove('show');
+  document.getElementById('cardsGrid').innerHTML = '';
+  document.getElementById('pagination').innerHTML = '';
+
+  const btn = document.getElementById('btnBuscar');
+  btn.disabled = true;
+
+  const params = new URLSearchParams({
+    q:         document.getElementById('q').value,
+    categoria: document.getElementById('categoria').value,
+    marca:     document.getElementById('marca').value,
+    pagina,
+    orden,
+    ia:        document.getElementById('useIA').checked ? '1' : '0',
+  });
+  const pmin = document.getElementById('pmin').value;
+  const pmax = document.getElementById('pmax').value;
+  if (pmin) params.append('precio_min', pmin);
+  if (pmax) params.append('precio_max', pmax);
+
+  currentPage = pagina;
+
+  try {
+    const res  = await fetch('/api/buscar?' + params);
+    const data = await res.json();
+    if (data.error) { showError(data.error); return; }
+
+    allCards     = data.items || [];
+    totalResults = data.total || 0;
+
+    renderStats(data.stats);
+    renderCards(sortData(allCards, currentSort), 'cardsGrid');
+    renderPagination(data.total, pagina);
+
+    const cnt = data.stats?.total_encontrados || 0;
+    document.getElementById('resultsCount').textContent =
+      `${cnt.toLocaleString()} vehículos · mostrando ${allCards.length}`;
+
+    // Mostrar botón de fechas
+    document.getElementById('btnFechas').style.display = 'inline-flex';
+    document.getElementById('fechasStatus').style.display = 'none';
+
+  } catch(e) {
+    showError('Error: ' + e.message);
+  } finally {
+    document.getElementById('loading').classList.remove('show');
+    btn.disabled = false;
+  }
+}
+
+// ── Render cards ────────────────────────────────────────────────────────────
+function renderCards(items, targetId) {
+  const grid = document.getElementById(targetId);
+  grid.innerHTML = '';
+  if (!items.length) {
+    if (targetId === 'cardsGrid') document.getElementById('empty').classList.add('show');
+    return;
+  }
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    const clsKey = item.clasificacion.replace(' ', '').toLowerCase();
+    card.className = `vcard ${clsKey}`;
+    card.onclick = () => openModal(item);
+
+    const imgHtml = item.imagen
+      ? `<img class="cimg" src="${item.imagen}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      : `<div class="cimg-ph">🚗</div>`;
+
+    // Badges
+    const badgesHtml = (item.badges || []).map(b => {
+      const cls = b === '1 DUEÑO' ? 'badge-1' : `badge ${b}`;
+      return `<span class="${cls}">${b}</span>`;
+    }).join('');
+
+    const diffHtml = item.diferencia_pct !== 0
+      ? `<span class="${item.diferencia_pct > 0 ? 'diff-pos':'diff-neg'}">
+           ${item.diferencia_pct > 0 ? '▼':'▲'}${Math.abs(item.diferencia_pct)}% vs mediana
+         </span>`
+      : '';
+
+    const esInmueble = ['casas','apartamentos','fincas','bodegas','locales']
+      .includes(document.getElementById('categoria').value);
+
+    let tagsHtml = '';
+    if (esInmueble) {
+      tagsHtml = [
+        item.metros     ? `<span class="tag km">📐 ${item.metros}</span>` : '',
+        item.habitaciones ? `<span class="tag">🛏 ${item.habitaciones}</span>` : '',
+        item.banos      ? `<span class="tag">🚿 ${item.banos}</span>` : '',
+        item.garaje     ? `<span class="tag">🚗 ${item.garaje}</span>` : '',
+        item.estrato    ? `<span class="tag">${item.estrato}</span>` : '',
+        item.negociable ? `<span class="tag neg">negociable</span>` : '',
+        item.urgencia?.length ? `<span class="tag urg">urgente</span>` : '',
+      ].filter(Boolean).join('');
+    } else {
+      tagsHtml = [
+        item.anio !== '?' ? `<span class="tag">${item.anio}</span>` : '',
+        item.km_fmt !== 'N/D' ? `<span class="tag km">🛣 ${item.km_fmt}</span>` : '',
+        item.unico_dueno ? `<span class="tag unico">1 dueño</span>` : '',
+        item.negociable  ? `<span class="tag neg">negociable</span>` : '',
+        item.urgencia?.length ? `<span class="tag urg">urgente</span>` : '',
+      ].filter(Boolean).join('');
+    }
+
+    const reasonsHtml = (item.razones || []).slice(0,3).map(r =>
+      `<div class="reason">${r}</div>`).join('');
+    const alertsHtml = (item.alertas || []).slice(0,1).map(a =>
+      `<div class="alert-i">${a}</div>`).join('');
+    const iaHtml = item.ia_resumen
+      ? `<div class="ia-summary">${item.ia_resumen}</div>` : '';
+
+    card.innerHTML = `
+      <div class="score-wrap">
+        <div class="score-ring" style="background:${item.color}">${item.puntaje}</div>
+      </div>
+      <div class="badges">${badgesHtml}</div>
+      ${imgHtml}
+      <div class="cbody">
+        <span class="ccls cls-${item.clasificacion}">${item.clasificacion}</span>
+        <div class="ctitle">${item.titulo}</div>
+        <div class="cprice">${item.precio_fmt} <small style="font-size:10px;color:var(--muted)">${item.moneda}</small></div>
+        <div class="cprice-sub">Mediana: ${item.mediana_grupo} ${diffHtml}</div>
+        <div class="cmeta">${tagsHtml}</div>
+        <div class="creasons">${reasonsHtml}${alertsHtml}</div>
+        ${iaHtml}
+      </div>
+      <div class="cfoot">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div class="cloc">📍 ${item.ciudad || 'Colombia'}</div>
+          ${item.fecha_fmt && item.fecha_fmt !== '?' ? `<div style="font-family:var(--mono);font-size:9px;color:var(--yellow)">📅 ${item.fecha_fmt}</div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="src-badge ${item.fuente === 'facebook' ? 'src-fb' : 'src-ml'}">${item.fuente === 'facebook' ? 'FB' : 'ML'}</span>
+          <a href="${item.url}" target="_blank" class="btn-ver" onclick="event.stopPropagation()">Ver →</a>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── Sort ────────────────────────────────────────────────────────────────────
+function sortData(data, mode) {
+  const d = [...data];
+  if (mode === 'score')      d.sort((a,b) => b.puntaje - a.puntaje);
+  else if (mode === 'reciente') d.sort((a,b) => {
+    const da = a.dias_publicado ?? 9999, db = b.dias_publicado ?? 9999;
+    return da !== db ? da - db : b.puntaje - a.puntaje;
+  });
+  else if (mode === 'precio_asc')  d.sort((a,b) => a.precio - b.precio);
+  else if (mode === 'precio_desc') d.sort((a,b) => b.precio - a.precio);
+  return d;
+}
+
+function sortCards(mode, btn) {
+  currentSort = mode;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards(sortData(allCards, mode), 'cardsGrid');
+}
+
+// ── Stats ───────────────────────────────────────────────────────────────────
+function renderStats(s) {
+  if (!s) return;
+  document.getElementById('statsPanel').style.display = 'block';
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="val">${(s.total_encontrados||0).toLocaleString()}</div><div class="lbl">Total</div></div>
+    <div class="stat-card"><div class="val">${s.precio_mediana||'-'}</div><div class="lbl">Mediana</div></div>
+    <div class="stat-card green"><div class="val">${s.oportunidades_excelentes||0}</div><div class="lbl">Excelentes</div></div>
+    <div class="stat-card green"><div class="val">${s.oportunidades_buenas||0}</div><div class="lbl">Buenas</div></div>
+    <div class="stat-card blue"><div class="val">${s.con_urgencia||0}</div><div class="lbl">Con urgencia</div></div>
+    <div class="stat-card blue"><div class="val">${s.negociables||0}</div><div class="lbl">Negociables</div></div>
+    <div class="stat-card"><div class="val">${s.precio_min||'-'}</div><div class="lbl">Precio mín</div></div>
+    <div class="stat-card"><div class="val">${s.precio_max||'-'}</div><div class="lbl">Precio máx</div></div>`;
+}
+
+// ── Paginación ──────────────────────────────────────────────────────────────
+function renderPagination(total, pagina) {
+  const pag   = document.getElementById('pagination');
+  const pages = Math.min(Math.ceil(total / 48), 10);
+  if (pages <= 1) { pag.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="buscar(${pagina-1})" ${pagina===0?'disabled':''}>←</button>`;
+  for (let i = 0; i < pages; i++) {
+    if (i < 2 || i > pages-3 || Math.abs(i-pagina) <= 1)
+      html += `<button class="page-btn ${i===pagina?'active':''}" onclick="buscar(${i})">${i+1}</button>`;
+    else if (Math.abs(i-pagina) === 2)
+      html += `<span style="color:var(--muted);padding:6px">…</span>`;
+  }
+  html += `<button class="page-btn" onclick="buscar(${pagina+1})" ${pagina>=pages-1?'disabled':''}>→</button>`;
+  pag.innerHTML = html;
+}
+
+// ── Modal ────────────────────────────────────────────────────────────────────
+function openModal(item) {
+  document.getElementById('modalOverlay').classList.add('show');
+
+  const factoresHtml = [
+    ...(item.razones || []).map(r => `<div class="reason">${r}</div>`),
+    ...(item.alertas || []).map(a => `<div class="alert-i">${a}</div>`),
+  ].join('');
+
+  const badgesHtml = (item.badges || []).map(b =>
+    `<span class="badge ${b}" style="font-size:9px;padding:3px 8px">${b}</span>`
+  ).join(' ');
+
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-title">${item.titulo}</div>
+    <div style="display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap">
+      <div>
+        <div class="cprice" style="font-size:22px">${item.precio_fmt} COP</div>
+        <div class="cprice-sub">Mediana del grupo: ${item.mediana_grupo}
+          ${item.diferencia_pct > 0 ? `<span class="diff-pos"> ▼${item.diferencia_pct}%</span>` : ''}
+        </div>
+        <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">${badgesHtml}</div>
+      </div>
+      <div class="score-breakdown" style="flex:1;min-width:180px">
+        <div class="score-big" style="color:${item.color}">${item.puntaje}<span style="font-size:14px;color:var(--muted)">/100</span></div>
+        <div class="score-factors">${factoresHtml}</div>
+        ${item.ia_resumen ? `<div class="ia-summary" style="margin-top:8px">${item.ia_resumen}</div>` : ''}
+      </div>
+    </div>
+    <div class="attrs-grid">
+      <div class="attr-item"><div class="ak">Marca</div><div class="av">${item.marca}</div></div>
+      <div class="attr-item"><div class="ak">Modelo</div><div class="av">${item.modelo||'?'}</div></div>
+      <div class="attr-item"><div class="ak">Año</div><div class="av">${item.anio}</div></div>
+      <div class="attr-item"><div class="ak">Kilometraje</div><div class="av">${item.km_fmt}</div></div>
+      <div class="attr-item"><div class="ak">Transmisión</div><div class="av">${item.transmision}</div></div>
+      <div class="attr-item"><div class="ak">Combustible</div><div class="av">${item.combustible}</div></div>
+      <div class="attr-item"><div class="ak">Condición</div><div class="av">${item.condicion}</div></div>
+      <div class="attr-item"><div class="ak">Publicado</div><div class="av">${item.fecha_fmt||'?'}</div></div>
+      <div class="attr-item"><div class="ak">Único dueño</div><div class="av">${item.unico_dueno?'✅ Sí':'—'}</div></div>
+      <div class="attr-item"><div class="ak">Negociable</div><div class="av">${item.negociable?'✅ Sí':'—'}</div></div>
+      <div class="attr-item"><div class="ak">Ciudad</div><div class="av">${item.ciudad||'?'}</div></div>
+    </div>
+    <a href="${item.url}" target="_blank" class="modal-btn">Ver publicación en MercadoLibre →</a>`;
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('show');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('q').addEventListener('keypress', e => { if (e.key === 'Enter') buscar(); });
+
+// Cargar inicio automáticamente
+cargarInicio();
+</script>
+</body>
+</html>
