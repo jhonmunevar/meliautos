@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeLiAutos — Acceso</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0c0f;
+    color: #e8eaf0;
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card {
+    background: #111318;
+    border: 1px solid #1e2430;
+    border-radius: 16px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .logo { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+  .logo span { color: #f0c040; }
+  .subtitle { font-family: 'Space Mono', monospace; font-size: 10px; color: #6b7280; margin-bottom: 32px; letter-spacing: 2px; }
+  .field { margin-bottom: 16px; text-align: left; }
+  .field label { font-family: 'Space Mono', monospace; font-size: 11px; color: #6b7280; display: block; margin-bottom: 6px; }
+  input[type="password"] {
+    width: 100%;
+    background: #181c23;
+    border: 1px solid #1e2430;
+    color: #e8eaf0;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="password"]:focus { border-color: #f0c040; }
+  .btn {
+    width: 100%;
+    background: #f0c040;
+    color: #000;
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 8px;
+  }
+  .btn:hover { opacity: 0.88; }
+  .error {
+    background: #2a0a0a;
+    border: 1px solid #5a1a1a;
+    color: #ff5252;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    margin-bottom: 16px;
+  }
+  .lock { font-size: 36px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="lock">🔐</div>
+  <div class="logo">MeLi<span>Autos</span></div>
+  <div class="subtitle">ACCESO RESTRINGIDO</div>
+
+  {% if error %}
+  <div class="error">⚠ {{ error }}</div>
+  {% endif %}
+
+  <form method="POST">
+    <div class="field">
+      <label>CONTRASEÑA</label>
+      <input type="password" name="password" placeholder="••••••••" autofocus>
+    </div>
+    <button type="submit" class="btn">ENTRAR →</button>
+  </form>
+</div>
+</body>
+</html>

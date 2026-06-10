@@ -3,7 +3,9 @@ MeLi Autos v5 - IA + Fecha + Único Dueño + Negociable + Pantalla de inicio
 Ejecutar: python app.py  →  http://localhost:5000
 """
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for
+from functools import wraps
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -29,11 +31,41 @@ import statistics, re, time, threading, json, requests as req
 from datetime import datetime, timezone
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "meliautos-secret-2024")
+ACCESS_PASSWORD = os.environ.get("ACCESS_PASSWORD", "meli2024")
 
 # ── Anthropic API (IA) ───────────────────────────────────────────────────────
 ANTHROPIC_KEY = ""   # opcional: pega tu API key para análisis IA de descripciones
 
-# ── Cache ────────────────────────────────────────────────────────────────────
+# ── Auth ─────────────────────────────────────────────────────────────────────
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("logged_in"):
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = ""
+    if request.method == "POST":
+        pwd = request.form.get("password", "")
+        if pwd == ACCESS_PASSWORD:
+            session["logged_in"] = True
+            return redirect(url_for("index"))
+        error = "Contraseña incorrecta"
+    return render_template("login.html", error=error)
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
+# ── Cache ─────────────────────────────────────────────────────────────────────
 cache      = {}
 cache_lock = threading.Lock()
 
@@ -815,11 +847,13 @@ def analizar(items_raw, enriquecer_descripciones=False):
 
 # ── Rutas ─────────────────────────────────────────────────────────────────────
 @app.route("/")
+@login_required
 def index():
     return render_template("index.html", categorias=CATEGORIAS, marcas=MARCAS)
 
 
 @app.route("/api/inicio")
+@login_required
 def api_inicio():
     """Carga las mejores oportunidades del momento para la pantalla de inicio."""
     resultados = []
@@ -842,6 +876,7 @@ def api_inicio():
 
 
 @app.route("/api/buscar")
+@login_required
 def api_buscar():
     query      = request.args.get("q", "").strip()
     cat_key    = request.args.get("categoria", "carros")
@@ -1313,10 +1348,8 @@ if __name__ == "__main__":
     print("\n" + "="*55)
     print("  🚗  MeLi Autos v5 - IA + Señales + Fecha")
     print("="*55)
+    get_driver()
     print("  Servidor en: http://localhost:5000")
-    print("  Chrome se iniciará en la primera búsqueda")
     print("  Ctrl+C para detener")
     print("="*55 + "\n")
-    import os
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, port=port, host="0.0.0.0")
+    app.run(debug=False, port=5000, host="0.0.0.0")
