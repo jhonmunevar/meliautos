@@ -298,6 +298,14 @@ main{padding:20px 24px;overflow-y:auto;}
       <div class="field"><label>Año mín</label><input type="number" id="anio_min" placeholder="2000" min="1990" max="2026"></div>
       <div class="field"><label>Año máx</label><input type="number" id="anio_max" placeholder="2026" min="1990" max="2026"></div>
     </div>
+    <div class="field" id="tipoNegocioSection" style="display:none">
+      <label>Tipo de negocio</label>
+      <select id="tipoNegocio">
+        <option value="">Venta y arriendo</option>
+        <option value="venta">Solo venta</option>
+        <option value="arriendo">Solo arriendo</option>
+      </select>
+    </div>
   </div>
 
   <!-- Filtros activos post-búsqueda -->
@@ -401,9 +409,16 @@ let allCards = [], currentPage = 0, totalResults = 0, currentSort = 'score';
 
 // ── Cambio categoría ───────────────────────────────────────────────────────
 const CATS_VEHICULOS = new Set(['carros','motos','camiones']);
+const CATS_INMUEBLES = new Set(['casas','apartamentos','fincas','bodegas','locales']);
 function onCatChange(val) {
-  const marcaSection = document.getElementById('marcaSection');
-  if (marcaSection) marcaSection.style.display = CATS_VEHICULOS.has(val) ? 'block' : 'none';
+  const marcaSection       = document.getElementById('marcaSection');
+  const yearSection        = document.getElementById('yearSection');
+  const tipoNegocioSection = document.getElementById('tipoNegocioSection');
+  const esVehiculo = CATS_VEHICULOS.has(val);
+  const esInmueble = CATS_INMUEBLES.has(val);
+  if (marcaSection)       marcaSection.style.display       = esVehiculo ? 'block' : 'none';
+  if (yearSection)        yearSection.style.display        = esVehiculo ? 'grid'  : 'none';
+  if (tipoNegocioSection) tipoNegocioSection.style.display = esInmueble ? 'block' : 'none';
 }
 
 // ── Inicio ─────────────────────────────────────────────────────────────────
@@ -690,6 +705,8 @@ async function buscar(pagina = 0, orden = "") {
   if (pmax) params.append('precio_max', pmax);
   if (amin) params.append('anio_min', amin);
   if (amax) params.append('anio_max', amax);
+  const tipoNeg = document.getElementById('tipoNegocio')?.value || '';
+  if (tipoNeg) params.append('tipo_negocio', tipoNeg);
 
   currentPage = pagina;
 

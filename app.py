@@ -112,16 +112,16 @@ def get_driver():
     return _driver
 
 # ── Constantes ───────────────────────────────────────────────────────────────
-# cat_key: (nombre, slug, dominio_base)
+# cat_key: (nombre, slug_venta, slug_arriendo, dominio_base)
 CATEGORIAS = {
-    "carros":    ("Carros y Camionetas", "carros-camionetas",    "carros.mercadolibre.com.co"),
-    "motos":     ("Motos",               "motos",                "motos.mercadolibre.com.co"),
-    "camiones":  ("Camiones y Buses",    "camiones-buses",       "carros.mercadolibre.com.co"),
-    "casas":     ("Casas",               "casas",                "inmuebles.mercadolibre.com.co"),
-    "apartamentos": ("Apartamentos",     "apartamentos",         "inmuebles.mercadolibre.com.co"),
-    "fincas":    ("Fincas",              "fincas",               "inmuebles.mercadolibre.com.co"),
-    "bodegas":   ("Bodegas",             "bodegas",              "inmuebles.mercadolibre.com.co"),
-    "locales":   ("Locales Comerciales", "locales-comerciales",  "inmuebles.mercadolibre.com.co"),
+    "carros":       ("Carros y Camionetas", "carros-camionetas",         None,                          "carros.mercadolibre.com.co"),
+    "motos":        ("Motos",               "motos",                     None,                          "motos.mercadolibre.com.co"),
+    "camiones":     ("Camiones y Buses",    "camiones-buses",            None,                          "carros.mercadolibre.com.co"),
+    "casas":        ("Casas",               "casas-en-venta",            "casas-en-arriendo",           "inmuebles.mercadolibre.com.co"),
+    "apartamentos": ("Apartamentos",        "apartamentos-en-venta",     "apartamentos-en-arriendo",    "inmuebles.mercadolibre.com.co"),
+    "fincas":       ("Fincas",              "fincas-en-venta",           "fincas-en-arriendo",          "inmuebles.mercadolibre.com.co"),
+    "bodegas":      ("Bodegas",             "bodegas-en-venta",          "bodegas-en-arriendo",         "inmuebles.mercadolibre.com.co"),
+    "locales":      ("Locales Comerciales", "locales-comerciales-venta", "locales-comerciales-arriendo","inmuebles.mercadolibre.com.co"),
 }
 
 # Categorías de vehículos (para mostrar marcas solo en estas)
@@ -886,11 +886,24 @@ def api_buscar():
     pagina     = request.args.get("pagina", 0, type=int)
     con_ia     = request.args.get("ia", "0") == "1"
 
-    cat_info = CATEGORIAS.get(cat_key, CATEGORIAS["carros"])
-    cat_slug, dominio = cat_info[1], cat_info[2]
-    orden    = request.args.get("orden", "")
-    anio_min = request.args.get("anio_min", type=int)
-    anio_max = request.args.get("anio_max", type=int)
+    cat_info     = CATEGORIAS.get(cat_key, CATEGORIAS["carros"])
+    tipo_negocio = request.args.get("tipo_negocio", "")  # "venta", "arriendo" o ""
+    orden        = request.args.get("orden", "")
+    anio_min     = request.args.get("anio_min", type=int)
+    anio_max     = request.args.get("anio_max", type=int)
+
+    # Seleccionar slug según tipo de negocio
+    if len(cat_info) == 4:
+        nombre, slug_venta, slug_arriendo, dominio = cat_info
+        if tipo_negocio == "arriendo" and slug_arriendo:
+            cat_slug = slug_arriendo
+        elif tipo_negocio == "venta" and slug_venta:
+            cat_slug = slug_venta
+        else:
+            # Sin filtro: usar slug de venta (ML lo usa como base)
+            cat_slug = slug_venta or slug_arriendo
+    else:
+        cat_slug, dominio = cat_info[1], cat_info[2]
 
     try:
         raw = scrape_listado(cat_slug, query, marca, precio_min, precio_max, pagina, dominio, orden)
