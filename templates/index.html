@@ -60,6 +60,14 @@ input::placeholder{color:var(--muted);}
   border-radius:3px;letter-spacing:1px;position:absolute;bottom:8px;left:8px;z-index:3;}
 .src-ml{background:#ffe800;color:#000;}
 .src-fb{background:#1877f2;color:#fff;}
+.src-carroya{background:#e8320a;color:#fff;}
+.src-metrocuadrado{background:#00a650;color:#fff;}
+.src-fincaraiz{background:#0066cc;color:#fff;}
+.sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px;flex-wrap:wrap;}
+.sub-tab{background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--muted);padding:7px 14px;font-family:var(--mono);font-size:10px;
+  font-weight:700;cursor:pointer;letter-spacing:1px;margin-bottom:-1px;transition:all .2s;}
+.sub-tab.active{color:var(--accent2);border-bottom-color:var(--accent2);}
 /* Tabs */
 .tabs{display:flex;gap:0;margin-bottom:0;border-bottom:2px solid var(--border);}
 .tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;
@@ -306,6 +314,16 @@ main{padding:20px 24px;overflow-y:auto;}
         <option value="arriendo">Solo arriendo</option>
       </select>
     </div>
+    <div class="field" id="ciudadSection" style="display:none">
+      <label>Ciudad</label>
+      <select id="ciudadBuscar">
+        <option value="bogota">Bogotá</option>
+        <option value="medellin">Medellín</option>
+        <option value="cali">Cali</option>
+        <option value="barranquilla">Barranquilla</option>
+        <option value="bucaramanga">Bucaramanga</option>
+      </select>
+    </div>
   </div>
 
   <!-- Filtros activos post-búsqueda -->
@@ -359,9 +377,23 @@ main{padding:20px 24px;overflow-y:auto;}
   <!-- Pantalla de resultados -->
   <div id="searchScreen" style="display:none">
     <div class="tabs">
-      <button class="tab-btn active" id="tabML" onclick="switchTab('ml')">🛒 MercadoLibre</button>
-      <!-- FB temporalmente desactivado -->
-      <!-- <button class="tab-btn fb" id="tabFB" onclick="switchTab('fb')">👥 Facebook Marketplace</button> -->
+      <button class="tab-btn active" id="tabVehiculos" onclick="switchMainTab('vehiculos')">🚗 Vehículos</button>
+      <button class="tab-btn" id="tabInmuebles" onclick="switchMainTab('inmuebles')">🏠 Inmuebles</button>
+    </div>
+    <!-- Sub-tabs Vehículos -->
+    <div id="subTabsVehiculos" style="margin-bottom:4px">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchSubTab('ml',this)" id="stML">🟡 MercadoLibre</button>
+        <button class="sub-tab" onclick="switchSubTab('carroya',this)" id="stCarroya">🔴 Carroya</button>
+      </div>
+    </div>
+    <!-- Sub-tabs Inmuebles -->
+    <div id="subTabsInmuebles" style="display:none;margin-bottom:4px">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchSubTab('metrocuadrado',this)" id="stMC">🟢 Metrocuadrado</button>
+        <button class="sub-tab" onclick="switchSubTab('fincaraiz',this)" id="stFR">🔵 FincaRaíz</button>
+        <button class="sub-tab" onclick="switchSubTab('ml_inmuebles',this)" id="stMLInm">🟡 MercadoLibre</button>
+      </div>
     </div>
     <div class="fb-notice" id="fbNotice">
       👥 <b>Primera vez:</b> Se abrirá una ventana de Chrome. Inicia sesión en Facebook,
@@ -513,31 +545,147 @@ function parsearFechaTexto(txt) {
   return txt.replace('Publicado ', '');
 }
 
-// ── Tab switching ──────────────────────────────────────────────────────────
-let currentTab = 'ml';
-let fbCards = [];
+// ── Tab switching principal (Vehículos / Inmuebles) ─────────────────────────
+let mainTab   = 'vehiculos';  // vehiculos | inmuebles
+let subTab    = 'ml';         // ml | carroya | metrocuadrado | fincaraiz | ml_inmuebles
+let cardsBySource = {};       // cache de cards por fuente
 
-function switchTab(tab) {
-  currentTab = tab;
-  document.getElementById('tabML').classList.toggle('active', tab === 'ml');
-  const tabFB = document.getElementById('tabFB');
-  if (tabFB) tabFB.classList.toggle('active', tab === 'fb');
-  const fbNotice = document.getElementById('fbNotice');
-  if (fbNotice) fbNotice.classList.toggle('show', tab === 'fb' && !fbCards.length);
+function switchMainTab(tab) {
+  mainTab = tab;
+  document.getElementById('tabVehiculos').classList.toggle('active', tab === 'vehiculos');
+  document.getElementById('tabInmuebles').classList.toggle('active', tab === 'inmuebles');
+  document.getElementById('subTabsVehiculos').style.display = tab === 'vehiculos' ? 'block' : 'none';
+  document.getElementById('subTabsInmuebles').style.display = tab === 'inmuebles' ? 'block' : 'none';
 
-  if (tab === 'ml') {
-    renderCards(sortData(allCards, currentSort), 'cardsGrid');
-    const cnt = allCards.length;
-    document.getElementById('resultsCount').textContent =
-      `${cnt} resultados · MercadoLibre`;
+  // Mostrar/ocultar campos del sidebar
+  const marcaSection  = document.getElementById('marcaSection');
+  const yearSection   = document.getElementById('yearSection');
+  const tipoNegocio   = document.getElementById('tipoNegocioSection');
+  const ciudadSection = document.getElementById('ciudadSection');
+  const cat           = document.getElementById('categoria');
+
+  if (tab === 'vehiculos') {
+    if (marcaSection) marcaSection.style.display = 'block';
+    if (yearSection)  yearSection.style.display  = 'grid';
+    if (tipoNegocio)  tipoNegocio.style.display  = 'none';
+    if (ciudadSection) ciudadSection.style.display = 'none';
+    // Resetear categoría a carros
+    if (cat) { cat.value = 'carros'; onCatChange('carros'); }
+    subTab = 'ml';
+    document.querySelectorAll('#subTabsVehiculos .sub-tab').forEach((b,i) => b.classList.toggle('active', i===0));
   } else {
-    if (fbCards.length) {
-      renderCards(sortData(fbCards, currentSort), 'cardsGrid');
-      document.getElementById('resultsCount').textContent =
-        `${fbCards.length} resultados · Facebook Marketplace`;
-    } else {
-      buscarFB();
+    if (marcaSection) marcaSection.style.display = 'none';
+    if (yearSection)  yearSection.style.display  = 'none';
+    if (tipoNegocio)  tipoNegocio.style.display  = 'block';
+    if (ciudadSection) ciudadSection.style.display = 'block';
+    if (cat) { cat.value = 'apartamentos'; onCatChange('apartamentos'); }
+    subTab = 'metrocuadrado';
+    document.querySelectorAll('#subTabsInmuebles .sub-tab').forEach((b,i) => b.classList.toggle('active', i===0));
+  }
+
+  // Limpiar resultados anteriores
+  allCards = [];
+  cardsBySource = {};
+  document.getElementById('cardsGrid').innerHTML = '';
+  document.getElementById('resultsCount').textContent = 'Usa BUSCAR para ver resultados';
+  document.getElementById('searchScreen').style.display = 'none';
+  document.getElementById('homeScreen').style.display   = 'block';
+}
+
+function switchSubTab(src, btn) {
+  subTab = src;
+  // Actualizar botón activo
+  const parent = btn.closest('.sub-tabs');
+  parent.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Mostrar cards de esta fuente si ya las tenemos
+  if (cardsBySource[src]) {
+    renderCards(sortData(cardsBySource[src], currentSort), 'cardsGrid');
+    document.getElementById('resultsCount').textContent =
+      `${cardsBySource[src].length} resultados · ${nombreFuente(src)}`;
+    document.getElementById('searchScreen').style.display = 'block';
+    document.getElementById('homeScreen').style.display   = 'none';
+  } else {
+    // Buscar automáticamente si ya hay una búsqueda activa
+    const q = document.getElementById('q').value.trim();
+    if (q || src === 'metrocuadrado' || src === 'fincaraiz') {
+      buscarEnFuente(src);
     }
+  }
+}
+
+function nombreFuente(src) {
+  const nombres = {
+    ml: 'MercadoLibre', carroya: 'Carroya',
+    metrocuadrado: 'Metrocuadrado', fincaraiz: 'FincaRaíz',
+    ml_inmuebles: 'MercadoLibre Inmuebles'
+  };
+  return nombres[src] || src;
+}
+
+async function buscarEnFuente(src) {
+  document.getElementById('homeScreen').style.display   = 'none';
+  document.getElementById('searchScreen').style.display = 'block';
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('cardsGrid').innerHTML = '';
+  document.getElementById('resultsCount').textContent = `Buscando en ${nombreFuente(src)}...`;
+
+  const q        = document.getElementById('q').value.trim();
+  const marca    = document.getElementById('marca')?.value || '';
+  const pmin     = document.getElementById('pmin')?.value || '';
+  const pmax     = document.getElementById('pmax')?.value || '';
+  const amin     = document.getElementById('anio_min')?.value || '';
+  const amax     = document.getElementById('anio_max')?.value || '';
+  const catEl    = document.getElementById('categoria');
+  const cat      = catEl ? catEl.value : 'carros';
+  const tipoNeg  = document.getElementById('tipoNegocio')?.value || '';
+  const ciudad   = document.getElementById('ciudadBuscar')?.value || 'bogota';
+
+  let url = '';
+  try {
+    if (src === 'carroya') {
+      const p = new URLSearchParams({q, marca, pagina: 0});
+      if (pmin) p.append('precio_min', pmin);
+      if (pmax) p.append('precio_max', pmax);
+      if (amin) p.append('anio_min', amin);
+      if (amax) p.append('anio_max', amax);
+      url = '/api/buscar_carroya?' + p;
+    } else if (src === 'metrocuadrado' || src === 'fincaraiz') {
+      const operacion = tipoNeg || 'arriendo';
+      const p = new URLSearchParams({tipo: cat, operacion, ciudad, q, fuente: src});
+      if (pmin) p.append('precio_min', pmin);
+      if (pmax) p.append('precio_max', pmax);
+      url = '/api/buscar_inmuebles?' + p;
+    } else if (src === 'ml_inmuebles') {
+      // Usar api/buscar normal con categoría de inmueble
+      const p = new URLSearchParams({q, categoria: cat, marca: '', pagina: 0, orden: '', ia: 0});
+      const op = tipoNeg || '';
+      if (op) p.append('tipo_negocio', op);
+      if (pmin) p.append('precio_min', pmin);
+      if (pmax) p.append('precio_max', pmax);
+      url = '/api/buscar?' + p;
+    } else {
+      // ML vehículos normal
+      buscar(0);
+      return;
+    }
+
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const items = data.items || [];
+    cardsBySource[src] = items;
+    renderCards(sortData(items, currentSort), 'cardsGrid');
+    renderStats(data.stats);
+    poblarFiltrosDinamicos(items);
+    document.getElementById('resultsCount').textContent =
+      `${items.length} resultados · ${nombreFuente(src)}`;
+  } catch(e) {
+    document.getElementById('resultsCount').textContent = '⚠ Error: ' + e.message;
+  } finally {
+    document.getElementById('loading').classList.remove('show');
   }
 }
 
@@ -667,16 +815,14 @@ function buscarRecientes(btn) {
 
 // ── Buscar ─────────────────────────────────────────────────────────────────
 async function buscar(pagina = 0, orden = "") {
+  // Si estamos en una sub-fuente distinta a ML, usar buscarEnFuente
+  if (subTab !== 'ml' && pagina === 0 && !orden) {
+    cardsBySource = {}; // limpiar cache al hacer nueva búsqueda
+    buscarEnFuente(subTab);
+    return;
+  }
   document.getElementById('homeScreen').style.display   = 'none';
   document.getElementById('searchScreen').style.display = 'block';
-  // Reset to ML tab on new search
-  currentTab = 'ml';
-  fbCards = [];
-  document.getElementById('tabML').classList.add('active');
-  const _tabFB = document.getElementById('tabFB');
-  if (_tabFB) _tabFB.classList.remove('active');
-  const _fbNotice = document.getElementById('fbNotice');
-  if (_fbNotice) _fbNotice.classList.remove('show');
   if (!orden) {
     document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('.sort-btn').classList.add('active');
@@ -716,6 +862,7 @@ async function buscar(pagina = 0, orden = "") {
     if (data.error) { showError(data.error); return; }
 
     allCards     = data.items || [];
+    cardsBySource['ml'] = allCards;
     totalResults = data.total || 0;
 
     renderStats(data.stats);
@@ -826,7 +973,12 @@ function renderCards(items, targetId) {
           ${item.fecha_fmt && item.fecha_fmt !== '?' ? `<div style="font-family:var(--mono);font-size:9px;color:var(--yellow)">📅 ${item.fecha_fmt}</div>` : ''}
         </div>
         <div style="display:flex;align-items:center;gap:6px">
-          <span class="src-badge ${item.fuente === 'facebook' ? 'src-fb' : 'src-ml'}">${item.fuente === 'facebook' ? 'FB' : 'ML'}</span>
+          <span class="src-badge src-${item.fuente || 'ml'}">${
+          item.fuente === 'carroya' ? 'CY' :
+          item.fuente === 'metrocuadrado' ? 'MC' :
+          item.fuente === 'fincaraiz' ? 'FR' :
+          item.fuente === 'facebook' ? 'FB' : 'ML'
+        }</span>
           <a href="${item.url}" target="_blank" class="btn-ver" onclick="event.stopPropagation()">Ver →</a>
         </div>
       </div>`;
