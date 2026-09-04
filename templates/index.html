@@ -358,6 +358,27 @@ main{padding:20px 24px;overflow-y:auto;}
 </aside>
 
 <main>
+  <!-- Tabs principales — siempre visibles -->
+  <div style="margin-bottom:0">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabVehiculos" onclick="switchMainTab('vehiculos')">🚗 Vehículos</button>
+      <button class="tab-btn" id="tabInmuebles" onclick="switchMainTab('inmuebles')">🏠 Inmuebles</button>
+    </div>
+    <div id="subTabsVehiculos" style="display:block">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchSubTab('ml',this)" id="stML">🟡 MercadoLibre</button>
+        <button class="sub-tab" onclick="switchSubTab('carroya',this)" id="stCarroya">🔴 Carroya</button>
+      </div>
+    </div>
+    <div id="subTabsInmuebles" style="display:none">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchSubTab('metrocuadrado',this)" id="stMC">🟢 Metrocuadrado</button>
+        <button class="sub-tab" onclick="switchSubTab('fincaraiz',this)" id="stFR">🔵 FincaRaíz</button>
+        <button class="sub-tab" onclick="switchSubTab('ml_inmuebles',this)" id="stMLInm">🟡 MercadoLibre</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Pantalla de inicio -->
   <div id="homeScreen">
     <div class="hero">
@@ -376,25 +397,6 @@ main{padding:20px 24px;overflow-y:auto;}
 
   <!-- Pantalla de resultados -->
   <div id="searchScreen" style="display:none">
-    <div class="tabs">
-      <button class="tab-btn active" id="tabVehiculos" onclick="switchMainTab('vehiculos')">🚗 Vehículos</button>
-      <button class="tab-btn" id="tabInmuebles" onclick="switchMainTab('inmuebles')">🏠 Inmuebles</button>
-    </div>
-    <!-- Sub-tabs Vehículos -->
-    <div id="subTabsVehiculos" style="margin-bottom:4px">
-      <div class="sub-tabs">
-        <button class="sub-tab active" onclick="switchSubTab('ml',this)" id="stML">🟡 MercadoLibre</button>
-        <button class="sub-tab" onclick="switchSubTab('carroya',this)" id="stCarroya">🔴 Carroya</button>
-      </div>
-    </div>
-    <!-- Sub-tabs Inmuebles -->
-    <div id="subTabsInmuebles" style="display:none;margin-bottom:4px">
-      <div class="sub-tabs">
-        <button class="sub-tab active" onclick="switchSubTab('metrocuadrado',this)" id="stMC">🟢 Metrocuadrado</button>
-        <button class="sub-tab" onclick="switchSubTab('fincaraiz',this)" id="stFR">🔵 FincaRaíz</button>
-        <button class="sub-tab" onclick="switchSubTab('ml_inmuebles',this)" id="stMLInm">🟡 MercadoLibre</button>
-      </div>
-    </div>
     <div class="fb-notice" id="fbNotice">
       👥 <b>Primera vez:</b> Se abrirá una ventana de Chrome. Inicia sesión en Facebook,
       luego vuelve aquí y haz clic en "FB Marketplace" de nuevo.
@@ -1090,8 +1092,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 document.getElementById('q').addEventListener('keypress', e => { if (e.key === 'Enter') buscar(); });
 
 // Cargar inicio automáticamente
-// Inicializar estado de tabs
-switchMainTab('vehiculos');
 cargarInicio();
 </script>
 </body>
