@@ -1090,6 +1090,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 document.getElementById('q').addEventListener('keypress', e => { if (e.key === 'Enter') buscar(); });
 
 // Cargar inicio automáticamente
+// Inicializar estado de tabs
+switchMainTab('vehiculos');
 cargarInicio();
 </script>
 </body>
