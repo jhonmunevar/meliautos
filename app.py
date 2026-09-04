@@ -32,6 +32,13 @@ def get_service():
 
 from bs4 import BeautifulSoup
 import statistics, re, time, threading, json, requests as req, random
+
+# Scrapers adicionales (Carroya, Metrocuadrado, FincaRaíz)
+try:
+    from scrapers import scrape_carroya, scrape_metrocuadrado, scrape_fincaraiz
+    SCRAPERS_OK = True
+except ImportError:
+    SCRAPERS_OK = False
 from datetime import datetime, timezone
 
 app = Flask(__name__)
@@ -718,6 +725,116 @@ def api_debug_ml():
         })
     except Exception as e:
         return jsonify({"error": str(e)})
+
+# ── Driver 3 — Carroya, Metrocuadrado, FincaRaíz ─────────────────────────────
+_driver3      = None
+_driver3_lock = threading.Lock()
+
+def get_driver3():
+    global _driver3
+    with _driver3_lock:
+        if _driver3 is not None:
+            try:
+                _ = _driver3.current_url
+            except Exception:
+                try: _driver3.quit()
+                except Exception: pass
+                _driver3 = None
+        if _driver3 is None:
+            print("  Iniciando Chrome 3 (fuentes extra)...")
+            opts = Options()
+            opts.add_argument("--headless=new")
+            opts.add_argument("--no-sandbox")
+            opts.add_argument("--disable-dev-shm-usage")
+            opts.add_argument("--disable-gpu")
+            opts.add_argument("--disable-blink-features=AutomationControlled")
+            opts.add_argument("--window-size=1920,1080")
+            opts.add_argument("--lang=es-CO")
+            opts.add_argument("--disable-extensions")
+            opts.add_argument("--single-process")
+            opts.add_experimental_option("excludeSwitches", ["enable-automation"])
+            opts.add_experimental_option("useAutomationExtension", False)
+            opts.add_argument(
+                "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            )
+            proxy_arg = get_proxy_arg()
+            if proxy_arg:
+                opts.add_argument(proxy_arg)
+            svc      = get_service()
+            _driver3 = webdriver.Chrome(service=svc, options=opts)
+            _driver3.execute_script(
+                "Object.defineProperty(navigator,'webdriver',{get:()=>undefined})"
+            )
+            print("  Chrome 3 listo ✓")
+    return _driver3
+
+
+@app.route("/api/buscar_carroya")
+@login_required
+def api_buscar_carroya():
+    if not SCRAPERS_OK:
+        return jsonify({"error": "scrapers.py no encontrado", "items": []}), 500
+    query      = request.args.get("q", "").strip()
+    marca      = request.args.get("marca", "").strip()
+    precio_min = request.args.get("precio_min", type=int)
+    precio_max = request.args.get("precio_max", type=int)
+    anio_min   = request.args.get("anio_min", type=int)
+    anio_max   = request.args.get("anio_max", type=int)
+
+    driver = get_driver3()
+    raw    = scrape_carroya(driver, get_cached, set_cached, query, marca,
+                            precio_min, precio_max, anio_min, anio_max)
+    items  = analizar(raw.get("items", []))
+    precios = [i["precio"] for i in items if i["precio"] > 0]
+    stats = {}
+    if precios:
+        stats = {
+            "total_encontrados":        len(items),
+            "precio_min":               f"${min(precios):,.0f}",
+            "precio_max":               f"${max(precios):,.0f}",
+            "precio_mediana":           f"${statistics.median(precios):,.0f}",
+            "oportunidades_excelentes": sum(1 for i in items if i["clasificacion"] == "EXCELENTE"),
+            "oportunidades_buenas":     sum(1 for i in items if i["clasificacion"] in ("MUY BUENA","BUENA")),
+        }
+    return jsonify({"items": items, "stats": stats, "total": len(items), "fuente": "carroya"})
+
+
+@app.route("/api/buscar_inmuebles")
+@login_required
+def api_buscar_inmuebles():
+    if not SCRAPERS_OK:
+        return jsonify({"error": "scrapers.py no encontrado", "items": []}), 500
+    tipo       = request.args.get("tipo", "apartamentos")
+    operacion  = request.args.get("operacion", "arriendo")
+    ciudad     = request.args.get("ciudad", "bogota")
+    query      = request.args.get("q", "").strip()
+    fuente     = request.args.get("fuente", "metrocuadrado")
+    precio_min = request.args.get("precio_min", type=int)
+    precio_max = request.args.get("precio_max", type=int)
+
+    driver = get_driver3()
+    if fuente == "fincaraiz":
+        raw = scrape_fincaraiz(driver, get_cached, set_cached,
+                               tipo, operacion, ciudad, query, precio_min, precio_max)
+    else:
+        raw = scrape_metrocuadrado(driver, get_cached, set_cached,
+                                   tipo, operacion, ciudad, query, precio_min, precio_max)
+
+    items   = analizar(raw.get("items", []))
+    precios = [i["precio"] for i in items if i["precio"] > 0]
+    stats   = {}
+    if precios:
+        stats = {
+            "total_encontrados":        len(items),
+            "precio_min":               f"${min(precios):,.0f}",
+            "precio_max":               f"${max(precios):,.0f}",
+            "precio_mediana":           f"${statistics.median(precios):,.0f}",
+            "oportunidades_excelentes": sum(1 for i in items if i["clasificacion"] == "EXCELENTE"),
+            "oportunidades_buenas":     sum(1 for i in items if i["clasificacion"] in ("MUY BUENA","BUENA")),
+        }
+    return jsonify({"items": items, "stats": stats, "total": len(items), "fuente": fuente})
+
 
 if __name__ == "__main__":
     print("\n" + "="*55)
