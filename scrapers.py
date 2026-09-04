@@ -159,7 +159,7 @@ def _parse_carroya_html(soup):
 
             if titulo and precio > 0:
                 items.append({
-                    "id": f"cy_{re.sub(r'[^\d]', '', url)[:12]}",
+                    "id": "cy_" + re.sub(r'[^\d]', '', url)[:12],
                     "titulo": titulo, "precio": precio, "url": url,
                     "imagen": imagen, "condicion": "used",
                     "marca": "?", "modelo": "", "anio": anio, "km_raw": km_raw,
@@ -347,7 +347,7 @@ def _parse_metro_html(soup, operacion):
             ban_m  = re.search(r"(\d+)\s*ba[ñn]", card.get_text(), re.IGNORECASE)
 
             items.append({
-                "id": f"mc_{re.sub(r'[^\d]', '', url)[:12]}",
+                "id": "mc_" + re.sub(r'[^\d]', '', url)[:12],
                 "titulo": titulo, "precio": precio, "url": url,
                 "imagen": imagen, "condicion": operacion,
                 "marca": "?", "modelo": "", "anio": "", "km_raw": "",
@@ -528,7 +528,7 @@ def _parse_fincaraiz_html(soup, operacion):
             est_m  = re.search(r"[Ee]strato\s*(\d)", txt)
 
             items.append({
-                "id": f"fr_{re.sub(r'[^\d]', '', url)[:12]}",
+                "id": "fr_" + re.sub(r'[^\d]', '', url)[:12],
                 "titulo": titulo, "precio": precio, "url": url,
                 "imagen": imagen, "condicion": operacion,
                 "marca": "?", "modelo": "", "anio": "", "km_raw": "",
