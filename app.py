@@ -104,14 +104,27 @@ PROXY_LIST = [
 ]
 
 def get_proxy_arg():
-    """Retorna argumento de proxy si las variables de entorno están configuradas."""
+    """
+    Retorna argumento de proxy desde variables de entorno.
+    Soporta dos modos:
+    - PROXY_HOST + PROXY_PORT: proxy fijo (ej: Rotating Residential p.webshare.io:80)
+    - PROXY_USER + PROXY_PASS solos: usa lista fija PROXY_LIST (datacenter)
+    """
     proxy_user = os.environ.get("PROXY_USER", "")
     proxy_pass = os.environ.get("PROXY_PASS", "")
-    if proxy_user and proxy_pass:
+    if not proxy_user or not proxy_pass:
+        return None
+    proxy_host = os.environ.get("PROXY_HOST", "")
+    proxy_port = os.environ.get("PROXY_PORT", "")
+    if proxy_host and proxy_port:
+        # Modo residencial: host fijo desde variables
+        print(f"  Usando proxy residencial: {proxy_host}:{proxy_port}")
+        return f"--proxy-server=http://{proxy_user}:{proxy_pass}@{proxy_host}:{proxy_port}"
+    else:
+        # Modo datacenter: rotar entre lista fija
         ph, pp = random.choice(PROXY_LIST)
-        print(f"  Usando proxy: {ph}:{pp}")
+        print(f"  Usando proxy datacenter: {ph}:{pp}")
         return f"--proxy-server=http://{proxy_user}:{proxy_pass}@{ph}:{pp}"
-    return None
 
 # ── Selenium driver ──────────────────────────────────────────────────────────
 _driver      = None
